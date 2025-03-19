@@ -198,6 +198,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3072899952488827852, guid: c34cb551f4d2e89488fd1d26b69d407f,
         type: 3}
+      propertyPath: moveSpeed
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3072899952488827852, guid: c34cb551f4d2e89488fd1d26b69d407f,
+        type: 3}
       propertyPath: gridManager
       value: 
       objectReference: {fileID: 1595682376}
@@ -302,13 +307,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.6710739, y: 0, z: 0, w: 0.7413905}
-  m_LocalPosition: {x: 28, y: 378.3, z: -5}
+  m_LocalRotation: {x: 0.40338564, y: 0, z: 0, w: 0.91503006}
+  m_LocalPosition: {x: 28, y: 377.3, z: -321.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 84.3, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 47.58, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
