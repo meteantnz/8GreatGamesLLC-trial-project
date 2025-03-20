@@ -9,6 +9,7 @@ public class CarController : MonoBehaviour
     private bool isDragging = false;
     private List<Vector3> previousPositions = new List<Vector3>(); // Önceki pozisyonları saklayan liste
     private bool isReversed = false; // Araba yönünü ters çevirmek için
+    public float rotationSpeed = 5f; // Dönüş hızını belirler
 
     void Start()
     {
@@ -76,7 +77,10 @@ public class CarController : MonoBehaviour
     {
         Vector3 nearestGridPos = gridManager.GetNearestGridPosition(targetPos);
 
-        if (nearestGridPos == carParts[0].position) return;
+        if (nearestGridPos == carParts[0].position) return; // Aynı yere hareket etme
+
+        // Eğer kafa (head) orta veya tail'in pozisyonuna gelirse hareketi engelle
+        if (nearestGridPos == carParts[1].position || nearestGridPos == carParts[2].position) return;
 
         previousPositions.Insert(0, carParts[0].position);
         previousPositions.RemoveAt(previousPositions.Count - 1);
@@ -86,17 +90,48 @@ public class CarController : MonoBehaviour
             nearestGridPos = FindAlternativeDirection();
         }
 
+        // Kafa kısmının rotasını güncelle
+        UpdateCarRotation(nearestGridPos - carParts[0].position);
+
+        // Kafa pozisyonunu güncelle
         carParts[0].position = nearestGridPos;
 
+        // Ortadaki ve arka parçalar için rotayı sırayla ayarlama
         for (int i = 1; i < carParts.Count; i++)
         {
+            // Önceki parçanın rotasını takip et
+            Vector3 directionToPrevious = carParts[i - 1].position - carParts[i].position;
+
+            // Dönüşü her zaman 90 derecelik çokluklarla sınırlama
+            float angle = Mathf.Atan2(directionToPrevious.x, directionToPrevious.z) * Mathf.Rad2Deg;
+            angle = Mathf.Round(angle / 90) * 90; // Açıyı 90'lık katlara yuvarla
+
+            // Dönüşü uygula
+            carParts[i].rotation = Quaternion.Euler(0, angle, 0);
+
+            // Her bir parçanın pozisyonunu güncelle
             carParts[i].position = previousPositions[i - 1];
+        }
+    }
+
+
+
+
+    void UpdateCarRotation(Vector3 direction)
+    {
+        if (direction == Vector3.zero) return;
+
+        float angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+        Quaternion newRotation = Quaternion.Euler(0, angle, 0);
+
+        foreach (Transform part in carParts)
+        {
+            part.rotation = newRotation;
         }
     }
 
     void ReverseCarParts()
     {
-        carParts.Reverse();
         previousPositions.Reverse();
     }
 
