@@ -1,18 +1,28 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class CarController : MonoBehaviour
+public class CarMovement : MonoBehaviour
 {
-    public GridManager gridManager;
-    public List<Transform> carParts; // 3 parçadan oluşan araba
+    private GridManager gridManager;
+    private List<Transform> carParts;
+    private CarManager carManager;
+    PassiveSpawner passiveSpawner;
     private Vector3 offset;
     private bool isDragging = false;
-    private List<Vector3> previousPositions = new List<Vector3>(); // Önceki pozisyonları saklayan liste
-    private bool isReversed = false; // Araba yönünü ters çevirmek için
-    public float rotationSpeed = 5f; // Dönüş hızını belirler
+    private List<Vector3> previousPositions = new List<Vector3>();
+    private bool isReversed = false;
+    public float rotationSpeed = 5f;
+    public List<Transform> seatPositions; // Arabanın içindeki boş koltuk yerleri
+    private List<GameObject> stickmenOnEdge = new List<GameObject>(); // Edge Object etrafındaki stickmanler
 
-    void Start()
+
+
+    public void Initialize(GridManager manager, List<Transform> parts, CarManager carMgr)
     {
+        gridManager = manager;
+        carParts = parts;
+        carManager = carMgr;
+
         foreach (Transform part in carParts)
         {
             previousPositions.Add(part.position);
@@ -34,7 +44,6 @@ public class CarController : MonoBehaviour
                     isDragging = true;
                     offset = hit.transform.position - GetMouseWorldPosition();
 
-                    // Eğer arkadaki parçaya tıklandıysa ters yönde hareket et
                     isReversed = (partIndex == carParts.Count - 1);
                     if (isReversed) ReverseCarParts();
                 }
@@ -77,9 +86,7 @@ public class CarController : MonoBehaviour
     {
         Vector3 nearestGridPos = gridManager.GetNearestGridPosition(targetPos);
 
-        if (nearestGridPos == carParts[0].position) return; // Aynı yere hareket etme
-
-        // Eğer kafa (head) orta veya tail'in pozisyonuna gelirse hareketi engelle
+        if (nearestGridPos == carParts[0].position) return;
         if (nearestGridPos == carParts[1].position || nearestGridPos == carParts[2].position) return;
 
         previousPositions.Insert(0, carParts[0].position);
@@ -90,33 +97,40 @@ public class CarController : MonoBehaviour
             nearestGridPos = FindAlternativeDirection();
         }
 
-        // Kafa kısmının rotasını güncelle
         UpdateCarRotation(nearestGridPos - carParts[0].position);
-
-        // Kafa pozisyonunu güncelle
         carParts[0].position = nearestGridPos;
 
-        // Ortadaki ve arka parçalar için rotayı sırayla ayarlama
         for (int i = 1; i < carParts.Count; i++)
         {
-            // Önceki parçanın rotasını takip et
             Vector3 directionToPrevious = carParts[i - 1].position - carParts[i].position;
-
-            // Dönüşü her zaman 90 derecelik çokluklarla sınırlama
             float angle = Mathf.Atan2(directionToPrevious.x, directionToPrevious.z) * Mathf.Rad2Deg;
-            angle = Mathf.Round(angle / 90) * 90; // Açıyı 90'lık katlara yuvarla
+            angle = Mathf.Round(angle / 90) * 90;
 
-            // Dönüşü uygula
             carParts[i].rotation = Quaternion.Euler(0, angle, 0);
-
-            // Her bir parçanın pozisyonunu güncelle
             carParts[i].position = previousPositions[i - 1];
         }
+
+        CheckForEdgeObjectCollision();
+
+        if (gridManager.IsEdgeObjectAtPosition(carParts[0].position))
+        {
+            FindStickmenNearEdgeObject(carParts[0].position); // Yakındaki Stickman’leri bul
+            TransferStickmenToCar(); // Stickman'leri arabaya yerleştir
+        }
     }
+    void FindStickmenNearEdgeObject(Vector3 edgePosition)
+    {
+        stickmenOnEdge.Clear(); // Önceki veriyi temizle
 
-
-
-
+        Collider[] colliders = Physics.OverlapSphere(edgePosition, gridManager.cellSize); // Yakındaki nesneleri bul
+        foreach (Collider col in colliders)
+        {
+            if (col.CompareTag("Stickman")) // Eğer çöp adam ise
+            {
+                stickmenOnEdge.Add(col.gameObject); // Listeye ekle
+            }
+        }
+    }
     void UpdateCarRotation(Vector3 direction)
     {
         if (direction == Vector3.zero) return;
@@ -170,5 +184,36 @@ public class CarController : MonoBehaviour
     {
         return position.x >= 0 && position.x < gridManager.width * gridManager.cellSize &&
                position.z >= 0 && position.z < gridManager.height * gridManager.cellSize;
+    }
+
+    void CheckForEdgeObjectCollision()
+    {
+        foreach (Transform part in carParts)
+        {
+            Vector3 gridPosition = gridManager.GetNearestGridPosition(part.position);
+
+            if (gridManager.IsEdgeObjectAtPosition(gridPosition))
+            {
+                StickmanManager.Instance.MoveStickmenToCar(carManager);
+                break;
+            }
+        }
+    }
+    void TransferStickmenToCar()
+    {
+        if (stickmenOnEdge.Count == 0) return; // Eğer taşınacak stickman yoksa çık
+
+        int seatIndex = 0; // Koltukları sırayla doldurmak için
+
+        foreach (GameObject stickman in stickmenOnEdge)
+        {
+            if (seatIndex >= seatPositions.Count) break; // Eğer boş koltuk kalmadıysa dur
+
+            stickman.transform.position = seatPositions[seatIndex].position; // Koltuğa taşı
+            stickman.transform.SetParent(transform); // Arabaya bağla (çocuk nesne yap)
+            seatIndex++;
+        }
+
+        stickmenOnEdge.Clear(); // Stickman'ler arabaya geçti, listeyi temizle
     }
 }

@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
@@ -7,17 +7,21 @@ public class GridManager : MonoBehaviour
     public int height = 6;
     public float cellSize = 1.5f;
     public GameObject cellPrefab;
+    public PassiveSpawner passiveSpawner;
+    public StickmanManager stickmanManager;
+    private List<Vector3> edgeObjectPositions = new List<Vector3>(); // Edge objelerin pozisyonlarý
+
 
     private Transform[,] gridArray;
 
     void Start()
     {
         GenerateGrid();
-    }
 
-    void Update()
-    {
-        // Bu kýsýmda sürüklemeyi yönetmek için bir event ya da baþka mantýklar eklenebilir
+        if (passiveSpawner != null)
+        {
+            passiveSpawner.Initialize(this, gridArray, stickmanManager);
+        }
     }
 
     void GenerateGrid()
@@ -45,6 +49,17 @@ public class GridManager : MonoBehaviour
         z = Mathf.Clamp(z, 0, height - 1);
 
         return new Vector3(x * cellSize, 0, z * cellSize);
+    }
+    public bool IsEdgeObjectAtPosition(Vector3 position)
+    {
+        foreach (Vector3 edgePos in edgeObjectPositions)
+        {
+            if (Vector3.Distance(edgePos, position) < cellSize * 0.5f) // Yakýnsa ayný hücrede say
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
