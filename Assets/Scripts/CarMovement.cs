@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using TMPro;
 
 public class CarMovement : MonoBehaviour
 {
     private GridManager gridManager;
     private List<Transform> carParts;
     private CarManager carManager;
-    PassiveSpawner passiveSpawner;
+    PassageSpawner passageSpawner;
     private Vector3 offset;
     private bool isDragging = false;
     private List<Vector3> previousPositions = new List<Vector3>();
@@ -31,6 +32,7 @@ public class CarMovement : MonoBehaviour
 
     void Update()
     {
+        
         if (Input.GetMouseButtonDown(0))
         {
             RaycastHit hit;
@@ -49,7 +51,7 @@ public class CarMovement : MonoBehaviour
                 }
             }
         }
-
+        
         if (isDragging && Input.GetMouseButton(0))
         {
             Vector3 targetPos = GetMouseWorldPosition() + offset;
@@ -85,7 +87,7 @@ public class CarMovement : MonoBehaviour
     void MoveCarToGrid(Vector3 targetPos)
     {
         Vector3 nearestGridPos = gridManager.GetNearestGridPosition(targetPos);
-
+        gridManager.IsPassageObjectAtPosition(carParts[0].position);
         if (nearestGridPos == carParts[0].position) return;
         if (nearestGridPos == carParts[1].position || nearestGridPos == carParts[2].position) return;
 
@@ -111,26 +113,18 @@ public class CarMovement : MonoBehaviour
         }
 
         CheckForEdgeObjectCollision();
-
-        if (gridManager.IsEdgeObjectAtPosition(carParts[0].position))
+        if (passageSpawner != null)
         {
-            FindStickmenNearEdgeObject(carParts[0].position); // Yakındaki Stickman’leri bul
-            TransferStickmenToCar(); // Stickman'leri arabaya yerleştir
+            passageSpawner.CheckCarInCell(carManager.carParts[0].position);
         }
-    }
-    void FindStickmenNearEdgeObject(Vector3 edgePosition)
-    {
-        stickmenOnEdge.Clear(); // Önceki veriyi temizle
-
-        Collider[] colliders = Physics.OverlapSphere(edgePosition, gridManager.cellSize); // Yakındaki nesneleri bul
-        foreach (Collider col in colliders)
+        else
         {
-            if (col.CompareTag("Stickman")) // Eğer çöp adam ise
-            {
-                stickmenOnEdge.Add(col.gameObject); // Listeye ekle
-            }
+            Debug.LogError("PassageSpawner is not assigned!");
         }
+
     }
+
+
     void UpdateCarRotation(Vector3 direction)
     {
         if (direction == Vector3.zero) return;
@@ -192,28 +186,6 @@ public class CarMovement : MonoBehaviour
         {
             Vector3 gridPosition = gridManager.GetNearestGridPosition(part.position);
 
-            if (gridManager.IsEdgeObjectAtPosition(gridPosition))
-            {
-                StickmanManager.Instance.MoveStickmenToCar(carManager);
-                break;
-            }
         }
-    }
-    void TransferStickmenToCar()
-    {
-        if (stickmenOnEdge.Count == 0) return; // Eğer taşınacak stickman yoksa çık
-
-        int seatIndex = 0; // Koltukları sırayla doldurmak için
-
-        foreach (GameObject stickman in stickmenOnEdge)
-        {
-            if (seatIndex >= seatPositions.Count) break; // Eğer boş koltuk kalmadıysa dur
-
-            stickman.transform.position = seatPositions[seatIndex].position; // Koltuğa taşı
-            stickman.transform.SetParent(transform); // Arabaya bağla (çocuk nesne yap)
-            seatIndex++;
-        }
-
-        stickmenOnEdge.Clear(); // Stickman'ler arabaya geçti, listeyi temizle
     }
 }

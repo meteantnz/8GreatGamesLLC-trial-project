@@ -268,6 +268,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 904622862}
+    - targetCorrespondingSourceObject: {fileID: 7532114421865790404, guid: c34cb551f4d2e89488fd1d26b69d407f,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 904622866}
     - targetCorrespondingSourceObject: {fileID: 7699533381907844009, guid: c34cb551f4d2e89488fd1d26b69d407f,
         type: 3}
       insertIndex: -1
@@ -901,6 +905,24 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 126
   m_CollisionDetection: 2
+--- !u!114 &904622866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 904622857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fb79aa1832e7af40848a5873532dae0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridManager: {fileID: 1595682376}
+  carParts:
+  - {fileID: 904622858}
+  stickmanSeats:
+  - {fileID: 1556569161}
+  - {fileID: 663495019}
 --- !u!1 &910741647
 GameObject:
   m_ObjectHideFlags: 0

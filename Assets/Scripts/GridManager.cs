@@ -7,7 +7,7 @@ public class GridManager : MonoBehaviour
     public int height = 6;
     public float cellSize = 1.5f;
     public GameObject cellPrefab;
-    public PassiveSpawner passiveSpawner;
+    public PassageSpawner passageSpawner;
     public StickmanManager stickmanManager;
     private List<Vector3> edgeObjectPositions = new List<Vector3>(); // Edge objelerin pozisyonlarý
 
@@ -18,9 +18,9 @@ public class GridManager : MonoBehaviour
     {
         GenerateGrid();
 
-        if (passiveSpawner != null)
+        if (passageSpawner != null)
         {
-            passiveSpawner.Initialize(this, gridArray, stickmanManager);
+            passageSpawner.Initialize(this, gridArray, stickmanManager);
         }
     }
 
@@ -50,7 +50,7 @@ public class GridManager : MonoBehaviour
 
         return new Vector3(x * cellSize, 0, z * cellSize);
     }
-    public bool IsEdgeObjectAtPosition(Vector3 position)
+    public bool IsPassageObjectAtPosition(Vector3 position)
     {
         foreach (Vector3 edgePos in edgeObjectPositions)
         {

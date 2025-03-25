@@ -19,16 +19,4 @@ public class CarManager : MonoBehaviour
             carMovement.Initialize(gridManager, carParts, this);
         }
     }
-
-    public void AddStickmanToCar(GameObject stickman)
-    {
-        if (stickmenOnBoard.Count < stickmanSeats.Count)
-        {
-            Transform seat = stickmanSeats[stickmenOnBoard.Count];
-            stickman.transform.position = seat.position;
-            stickman.transform.parent = seat; // Arabaya baðlý kalmasý için
-
-            stickmenOnBoard.Add(stickman);
-        }
-    }
 }

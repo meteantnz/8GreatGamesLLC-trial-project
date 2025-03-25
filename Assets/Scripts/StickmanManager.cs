@@ -17,10 +17,6 @@ public class StickmanManager : MonoBehaviour
         Instance = this;
     }
 
-    public void RegisterStickman(GameObject stickman)
-    {
-        stickmen.Add(stickman);
-    }
     public void SpawnStickmen(Vector3 spawnPosition, Quaternion rotation)
     {
         for (int i = 0; i < numberOfStickmen; i++)
@@ -38,16 +34,5 @@ public class StickmanManager : MonoBehaviour
             Destroy(stickman);
         }
         spawnedStickmen.Clear();
-    }
-    public void MoveStickmenToCar(CarManager car)
-    {
-        int count = Mathf.Min(car.stickmanSeats.Count, stickmen.Count);
-
-        for (int i = 0; i < count; i++)
-        {
-            car.AddStickmanToCar(stickmen[i]);
-        }
-
-        stickmen.RemoveRange(0, count);
     }
 }
